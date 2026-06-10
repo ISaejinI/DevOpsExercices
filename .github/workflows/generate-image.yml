@@ -23,7 +23,7 @@ jobs:
             
             - name: Generate Image using Curl
               run: |
-                curl -d '{
+                RESPONSE=$(curl -d '{
                         "format": "jpeg",
                         "metadata": "some text",
                         "params": [
@@ -39,14 +39,14 @@ jobs:
                         }' \
                 -H "Authorization: Bearer ${{ secrets.API_UID }}" \
                 -H "Content-Type: application/json" \
-                -X POST https://api.dynapictures.com/designs/e789eaf793 \
-                -o response.json
-
-                cat response.json
+                -X POST https://api.dynapictures.com/designs/e789eaf793)
+                echo "$RESPONSE"
+                echo "response=$RESPONSE" >> $GITHUB_OUTPUT
+              id: generated_image
 
             - name: Get Image URL
               run: |
-                IMAGE_URL=$(jq -r '.imageUrl' response.json)
+                IMAGE_URL=$(echo '${{ steps.generated_image.outputs.response }}' | jq -r '.imageUrl')
                 echo "IMAGE_URL=$IMAGE_URL" >> $GITHUB_ENV
                 echo "Image URL: $IMAGE_URL"
 
