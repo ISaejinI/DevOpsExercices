@@ -31,11 +31,7 @@ jobs:
                         "metadata": "some text",
                         "params": [
                             {
-                            "name": "text2",
-                            "imageUrl": "Message de commit:"
-                            },
-                            {
-                            "name": "text3",
+                            "name": "text",
                             "text": "${{ env.COMMIT_MESSAGE }}"
                             }
                         ]
