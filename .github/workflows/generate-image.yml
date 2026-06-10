@@ -34,23 +34,20 @@ jobs:
                         "metadata": "some text",
                         "params": [
                             {
-                            "name": "text2",
-                            "imageUrl": "Message de commit:"
-                            },
-                            {
-                            "name": "text3",
+                            "name": "text",
                             "text": "${{ env.COMMIT_MESSAGE }}"
                             }
                         ]
                         }' \
                 )
 
-                echo "Réponse API :"
                 echo "$RESPONSE"
+                echo "response=$RESPONSE" >> $GITHUB_OUTPUT
+              id: generated_image
 
             - name: Get Image URL
               run: |
-                IMAGE_URL=$(jq -r '.imageUrl' response.json)
+                IMAGE_URL=$(echo '${{ steps.generated_image.outputs.response }}' | jq -r '.imageUrl')
                 echo "IMAGE_URL=$IMAGE_URL" >> $GITHUB_ENV
                 echo "Image URL: $IMAGE_URL"
 
