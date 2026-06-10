@@ -13,9 +13,6 @@ jobs:
     send-discord-notification:
         runs-on: ubuntu-latest
         steps:
-            - name: Get last commit message
-              run: echo "COMMIT_MESSAGE=$(git log -1 --pretty=%B)" >> $GITHUB_ENV
-
             - name: Download generated image artifact
               uses: actions/download-artifact@v4
               with:
