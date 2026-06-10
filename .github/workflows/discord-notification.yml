@@ -1,0 +1,39 @@
+name: Send Discord Notification
+
+on:
+    push:
+        branches: 
+            - main
+
+env:
+    COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+
+jobs:
+    send-discord-notification:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Download generated image artifact
+              uses: actions/download-artifact@v4
+              with:
+                name: generated-image
+                path: ./artifacts
+                github-token: ${{ secrets.GITHUB_TOKEN }}
+                run-id: ${{ github.event.workflow_run.id }}
+
+            - name: Get Image URL from artifact
+              run: |
+                echo "IMAGE_NAME=$(ls ./artifacts | head -n 1)" >> $GITHUB_ENV
+
+            - name: Build Image URL
+              run: |
+                echo "IMAGE_URL=https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/images/${{ env.IMAGE_NAME }}" >> $GITHUB_ENV
+
+            - name: Send Discord Message
+              env:
+                DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
+              uses: Ilshidur/action-discord@0.4.0
+              with:
+                args: |
+                    >>> # Nouveau commit sur la branche main 
+                    **${{ env.COMMIT_MESSAGE }}**
+                    [Voir l'image générée](${{ env.IMAGE_URL }})

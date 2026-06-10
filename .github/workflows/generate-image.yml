@@ -66,6 +66,12 @@ jobs:
                 git add public/
                 git commit -m "Add generated image and update index.html for commit ${{ github.sha }}"
                 git push
+            
+            - name: Save article as artifact
+              uses: actions/upload-artifact@v4
+              with:
+                name: generated-image
+                path: public/images/img-${{ github.sha }}.jpeg
 
             - name: Deploy to GitHub Pages
               uses: peaceiris/actions-gh-pages@v3
