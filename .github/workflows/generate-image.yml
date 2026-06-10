@@ -43,7 +43,7 @@ jobs:
                         }' \
                 -H "Authorization: Bearer ${{ secrets.API_UID }}" \
                 -H "Content-Type: application/json" \
-                -X POST https://api.dynapictures.com/designs/${{ secrets.API_UID }} \
+                -X POST https://api.dynapictures.com/designs/e789eaf793 \
                 -o response.json
 
                 cat response.json
