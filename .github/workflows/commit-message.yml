@@ -1,0 +1,14 @@
+name: Display Commit Message
+
+on:
+    push:
+        branches: 
+            - main
+    workflow_dispatch:
+
+jobs:
+    commit-msg-disp:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Display Commit Message
+              run: echo ${{ github.event.head_commit.message }}
