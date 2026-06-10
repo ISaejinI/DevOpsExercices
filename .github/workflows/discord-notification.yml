@@ -6,6 +6,9 @@ on:
         types:
             - completed
 
+env:
+    COMMIT_MESSAGE: ${{ github.event.workflow_run.head_commit.message }}
+
 jobs:
     send-discord-notification:
         runs-on: ubuntu-latest
