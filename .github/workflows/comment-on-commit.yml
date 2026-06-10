@@ -1,4 +1,4 @@
-name: Send Discord Notification
+name: Add Comment on Commit
 
 on:
     workflow_run:
@@ -7,11 +7,12 @@ on:
         types:
             - completed
 
-env:
-    COMMIT_MESSAGE: ${{ github.event.workflow_run.head_commit.message }}
+permissions:
+    contents: write
+    actions: read
 
 jobs:
-    send-discord-notification:
+    add-comment-on-commit:
         runs-on: ubuntu-latest
         steps:
             - name: Download generated image artifact
@@ -30,12 +31,13 @@ jobs:
               run: |
                 echo "IMAGE_URL=https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/images/${{ env.IMAGE_NAME }}" >> $GITHUB_ENV
 
-            - name: Send Discord Message
-              env:
-                DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
-              uses: Ilshidur/action-discord@0.4.0
+            - name: Add Comment on Commit
+              uses: actions/github-script@v6
               with:
-                args: |
-                    >>> # Nouveau commit sur la branche main 
-                    **${{ env.COMMIT_MESSAGE }}**
-                    [Voir l'image générée](${{ env.IMAGE_URL }})
+                script: |
+                    await github.rest.issues.createCommitComment({
+                        owner: context.repo.owner,
+                        repo: context.repo.repo,
+                        commit_sha: context.payload.workflow_run.head_sha,
+                        body: `Nouveau commit sur la branche main : **${{ env.COMMIT_MESSAGE }}**\n\n![Generated Image](${{ env.IMAGE_URL }})`
+                    })
