@@ -28,14 +28,6 @@ jobs:
                         "metadata": "some text",
                         "params": [
                             {
-                            "name": "background",
-                            "imageUrl": "https://blobs6.dynapictures.com/media/e801fb41c3/undefined"
-                            },
-                            {
-                            "name": "frame",
-                            "imageUrl": "https://blobs6.dynapictures.com/media/e801fb41c3/undefined"
-                            },
-                            {
                             "name": "text",
                             "text": "${{ env.COMMIT_MESSAGE }}"
                             }
