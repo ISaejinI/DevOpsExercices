@@ -1,0 +1,74 @@
+name: Generate Image and Push to Github Pages
+
+on:
+    push:
+        branches:
+            - main
+    workflow_dispatch:
+
+jobs:
+    generate-image:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Clone GitHub Repo
+              uses: actions/checkout@v2
+
+            - name: Set up Node.js
+              uses: actions/setup-node@v1
+              with:
+                node-version: 26
+
+            - name: Get last commit message
+              run: echo "COMMIT_MESSAGE=$(git log -1 --pretty=%B)" >> $GITHUB_ENV
+            
+            - name: Generate Image using Curl
+              run: |
+                curl -d '{
+                        "format": "jpeg",
+                        "metadata": "some text",
+                        "params": [
+                            {
+                            "name": "background",
+                            "imageUrl": "https://blobs6.dynapictures.com/media/e801fb41c3/undefined"
+                            },
+                            {
+                            "name": "frame",
+                            "imageUrl": "https://blobs6.dynapictures.com/media/e801fb41c3/undefined"
+                            },
+                            {
+                            "name": "text",
+                            "text": "${{ env.COMMIT_MESSAGE }}"
+                            }
+                        ]
+                        }' \
+                -H "Authorization: Bearer ${{ secrets.API_UID }}" \
+                -H "Content-Type: application/json" \
+                -X POST https://api.dynapictures.com/designs/${{ secrets.API_UID }}
+              id: generated_image
+
+            - name: Get Image URL
+              run: |
+                echo "IMAGE_URL=$(echo '${{ steps.generated_image.outputs.response }}' | jq -r '.imageUrl')" >> $GITHUB_ENV
+                echo $IMAGE_URL
+
+            - name: Save Image in images folder
+              run: |
+                mkdir -p public/images
+                curl -L -o public/images/img-${{ github.sha }}.jpeg ${{ env.IMAGE_URL }}
+
+            - name: Generate index.html for GitHub Pages
+              run: node ./scripts/generate-html-index.js
+
+            - name: Commit and Push Changes
+              run: |
+                git config --global user.name "OtterBot"
+                git config --global user.email "github-actions[bot]@users.noreply.github.com"
+                git add public/
+                git commit -m "Add generated image and update index.html for commit ${{ github.sha }}"
+                git push
+
+            - name: Deploy to GitHub Pages
+              uses: peaceiris/actions-gh-pages@v3
+              with:
+                github_token: ${{ secrets.GITHUB_TOKEN }}
+                publish_dir: ./public

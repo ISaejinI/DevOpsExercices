@@ -1,0 +1,176 @@
+const fs = require("fs");
+const path = require("path");
+
+const imagesDir = path.join(__dirname, "../public/images");
+const outputFile = path.join(__dirname, "../public/index.html");
+
+// Crée le dossier si besoin
+if (!fs.existsSync(imagesDir)) {
+  fs.mkdirSync(imagesDir, { recursive: true });
+}
+
+// Extensions autorisées
+const allowedExtensions = [".jpg", ".jpeg", ".png", ".webp", ".gif"];
+
+// Récupère toutes les images
+const images = fs
+  .readdirSync(imagesDir)
+  .filter((file) => allowedExtensions.includes(path.extname(file).toLowerCase()))
+  .sort()
+  .reverse();
+
+const imageCards = images
+  .map((image) => {
+    return `
+      <article class="card">
+        <img src="./images/${image}" alt="${image}" loading="lazy">
+        <div class="card-content">
+          <h2>${image}</h2>
+          <a href="./images/${image}" target="_blank">Voir l'image</a>
+        </div>
+      </article>
+    `;
+  })
+  .join("");
+
+const html = `<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Images générées</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #0f172a, #1e293b);
+      color: #ffffff;
+      padding: 40px 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 50px;
+    }
+
+    header h1 {
+      font-size: clamp(2rem, 5vw, 4rem);
+      margin-bottom: 15px;
+      background: linear-gradient(90deg, #38bdf8, #a78bfa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    header p {
+      color: #cbd5e1;
+      font-size: 1.1rem;
+    }
+
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 25px;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 20px;
+      overflow: hidden;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4);
+    }
+
+    .card img {
+      width: 100%;
+      height: 220px;
+      object-fit: cover;
+      display: block;
+      background: #020617;
+    }
+
+    .card-content {
+      padding: 18px;
+    }
+
+    .card-content h2 {
+      font-size: 0.95rem;
+      margin-bottom: 15px;
+      color: #e2e8f0;
+      word-break: break-all;
+    }
+
+    .card-content a {
+      display: inline-block;
+      text-decoration: none;
+      color: #020617;
+      background: linear-gradient(90deg, #38bdf8, #a78bfa);
+      padding: 10px 16px;
+      border-radius: 999px;
+      font-weight: bold;
+      transition: opacity 0.2s ease;
+    }
+
+    .card-content a:hover {
+      opacity: 0.85;
+    }
+
+    .empty {
+      text-align: center;
+      padding: 60px 20px;
+      border: 1px dashed rgba(255, 255, 255, 0.25);
+      border-radius: 20px;
+      color: #cbd5e1;
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 60px;
+      color: #94a3b8;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <header>
+      <h1>Images générées</h1>
+      <p>Galerie automatique des images générées par GitHub Actions.</p>
+    </header>
+
+    ${
+      images.length > 0
+        ? `<main class="gallery">${imageCards}</main>`
+        : `<div class="empty">Aucune image générée pour le moment.</div>`
+    }
+
+    <footer>
+      Généré automatiquement avec GitHub Actions
+    </footer>
+  </div>
+</body>
+</html>`;
+
+fs.writeFileSync(outputFile, html, "utf8");
+
+console.log(`Index généré avec ${images.length} image(s).`);
+console.log(`Fichier créé : ${outputFile}`);
