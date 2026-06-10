@@ -1,9 +1,10 @@
 name: Send Discord Notification
 
 on:
-    push:
-        branches: 
-            - main
+    workflow_run:
+        workflows: ["Generate Image and Push to Github Pages"]
+        types:
+            - completed
 
 env:
     COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
