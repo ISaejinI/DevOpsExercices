@@ -26,24 +26,23 @@ jobs:
             
             - name: Generate Image using Curl
               run: |
-                RESPONSE=$(curl -X POST https://api.dynapictures.com/designs/${{ secrets.API_UID }} \
-                    -H "Authorization: Bearer ${{ secrets.API_KEY }}" \
-                    -H "Content-Type: application/json" \
-                    -d '{
+                RESPONSE=$(curl -d '{
                         "format": "jpeg",
                         "metadata": "some text",
-                        "params": [ 
-                        {
+                        "params": [
+                            {
                             "name": "text2",
-                            "text": "Message de commit :"
-                        },
-                        {
+                            "imageUrl": "Message de commit:"
+                            },
+                            {
                             "name": "text3",
-                            "text": "'"${{ env.MESSAGE }}"'"
-                        }
+                            "text": "${{ env.COMMIT_MESSAGE }}"
+                            }
                         ]
-                    }'
-                    )
+                        }' \
+                -H "Authorization: Bearer ${{ secrets.API_UID }}" \
+                -H "Content-Type: application/json" \
+                -X POST https://api.dynapictures.com/designs/e789eaf793)
 
                 echo "Réponse API :"
                 echo "$RESPONSE"
