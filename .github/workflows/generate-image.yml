@@ -1,73 +1,157 @@
-name: Generate Image and Push to Github Pages
+name: Generate Image from Commit
 
 on:
-    push:
-        branches:
-            - main
-    workflow_dispatch:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
-    generate-image:
-        runs-on: ubuntu-latest
-        steps:
-            - name: Clone GitHub Repo
-              uses: actions/checkout@v2
+  generate-and-deploy:
+    runs-on: ubuntu-latest
 
-            - name: Set up Node.js
-              uses: actions/setup-node@v1
-              with:
-                node-version: 26
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
 
-            - name: Get last commit message
-              run: echo "COMMIT_MESSAGE=$(git log -1 --pretty=%B)" >> $GITHUB_ENV
-            
-            - name: Generate Image using Curl
-              run: |
-                RESPONSE=$(curl -d '{
-                        "format": "jpeg",
-                        "metadata": "some text",
-                        "params": [
-                            {
-                            "name": "text2",
-                            "text": "Commit Message:"
-                            },
-                            {
-                            "name": "text3",
-                            "text": "${{ env.COMMIT_MESSAGE }}"
-                            }
-                        ]
-                        }' \
-                -H "Authorization: Bearer ${{ secrets.API_UID }}" \
-                -H "Content-Type: application/json" \
-                -X POST https://api.dynapictures.com/designs/e789eaf793)
-                echo "$RESPONSE"
-                echo "response=$RESPONSE" >> $GITHUB_OUTPUT
-              id: generated_image
+      - name: Get commit message
+        run: |
+          echo "MESSAGE=$(git log -1 --pretty=%B)" >> $GITHUB_ENV
 
-            - name: Get Image URL
-              run: |
-                IMAGE_URL=$(echo '${{ steps.generated_image.outputs.response }}' | jq -r '.imageUrl')
-                echo "IMAGE_URL=$IMAGE_URL" >> $GITHUB_ENV
-                echo "Image URL: $IMAGE_URL"
+      - name: Generate image via DynaPictures
+        run: |
+          mkdir -p public/images
 
-            - name: Save Image in images folder
-              run: |
-                mkdir -p public/images
-                curl -L -o public/images/img-${{ github.sha }}.jpeg ${{ env.IMAGE_URL }}
+          RESPONSE=$(curl -X POST https://api.dynapictures.com/designs/${{ secrets.API_UID }} \
+            -H "Authorization: Bearer ${{ secrets.API_KEY }}" \
+            -H "Content-Type: application/json" \
+            -d '{
+                "format": "jpeg",
+                "metadata": "some text",
+                "params": [ 
+                  {
+                    "name": "text2",
+                    "text": "Message de commit :"
+                  },
+                  {
+                    "name": "text3",
+                    "text": "'"${{ env.MESSAGE }}"'"
+                  }
+                ]
+              }'
+            )
 
-            - name: Generate index.html for GitHub Pages
-              run: node ./scripts/generate-html-index.js
+          echo "Réponse API :"
+          echo "$RESPONSE"
 
-            - name: Commit and Push Changes
-              run: |
-                git config --global user.name "OtterBot"
-                git config --global user.email "github-actions[bot]@users.noreply.github.com"
-                git add public/
-                git commit -m "Add generated image and update index.html for commit ${{ github.sha }}"
-                git push
+          IMAGE_URL=$(echo "$RESPONSE" | jq -r '.imageUrl')
+          echo "IMAGE_URL=$IMAGE_URL"
 
-            - name: Deploy to GitHub Pages
-              uses: peaceiris/actions-gh-pages@v3
-              with:
-                github_token: ${{ secrets.GITHUB_TOKEN }}
-                publish_dir: ./public
+          if [ "$IMAGE_URL" = "null" ] || [ -z "$IMAGE_URL" ]; then
+            echo "Erreur : aucune image_url retournée par l'API"
+            exit 1
+          fi
+
+          FILE_NAME="image-$(date +%s).jpg"
+          curl -o public/images/$FILE_NAME $IMAGE_URL
+
+          echo "IMAGE_NAME=$FILE_NAME" >> $GITHUB_ENV
+
+      - name: Generate index.html
+        run: |
+          cat > public/index.html <<'EOF'
+          <!DOCTYPE html>
+          <html lang="fr">
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Images générées</title>
+            <style>
+              body {
+                font-family: Arial, sans-serif;
+                background: #f5f5f5;
+                margin: 0;
+                padding: 40px;
+              }
+
+              h1 {
+                text-align: center;
+              }
+
+              .gallery {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                gap: 24px;
+                margin-top: 40px;
+              }
+
+              .card {
+                background: white;
+                padding: 16px;
+                border-radius: 12px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+                text-align: center;
+              }
+
+              img {
+                max-width: 100%;
+                border-radius: 8px;
+              }
+
+              p {
+                font-size: 14px;
+                color: #555;
+                word-break: break-all;
+              }
+            </style>
+          </head>
+          <body>
+            <h1>Images générées depuis les commits</h1>
+            <div class="gallery">
+          EOF
+
+          for img in public/images/*
+          do
+            if [ -f "$img" ]; then
+              filename=$(basename "$img")
+              echo "<div class='card'>" >> public/index.html
+              echo "<img src='images/$filename' alt='Image générée'>" >> public/index.html
+              echo "<p>$filename</p>" >> public/index.html
+              echo "</div>" >> public/index.html
+            fi
+          done
+
+          cat >> public/index.html <<'EOF'
+            </div>
+          </body>
+          </html>
+          EOF
+
+      - name: Push generated image to main
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add public/images public/index.html
+
+          if git diff --cached --quiet; then
+            echo "Aucun changement à commit"
+          else
+            git commit -m "Add generated image [skip ci]"
+            git push
+          fi
+
+      - name: Upload generated image as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: image-generee
+          path: public/images/${{ env.IMAGE_NAME }}
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./public
