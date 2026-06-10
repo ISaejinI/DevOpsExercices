@@ -35,7 +35,7 @@ jobs:
                         "params": [
                             {
                             "name": "text",
-                            "text": "Message de commit: ${{ env.COMMIT_MESSAGE }}"
+                            "text": "${{ env.COMMIT_MESSAGE }}"
                             }
                         ]
                         }' \
