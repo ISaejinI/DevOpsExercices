@@ -9,7 +9,7 @@
 
 Ce projet utilise **GitHub Actions** pour générer automatiquement une image à partir du message du dernier commit envoyé sur la branche `main`.
 
-À chaque nouveau commit, un workflow récupère le message du commit, l’envoie à l’API **DynaPictures**, télécharge l’image générée, met à jour une page `index.html`, puis déploie le contenu sur **GitHub Pages**.
+À chaque nouveau commit, un workflow récupère le message du commit, l’envoie à l’API **DynaPictures**, télécharge l’image générée, met à jour une page `index.html`, puis déploie le contenu sur **[GitHub Pages](https://isaejini.github.io/DevOpsExercices/)**.
 
 ## Fonctionnalités
 
