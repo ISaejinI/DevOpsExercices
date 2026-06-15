@@ -5,6 +5,13 @@
 ![Stars](https://img.shields.io/github/stars/ISaejinI/DevOpsExercices)
 ![Last commit](https://img.shields.io/github/last-commit/ISaejinI/DevOpsExercices?label=dernier%20commit)
 
+## État des workflows
+
+![Display Commit Message](https://github.com/ISaejinI/DevOpsExercices/actions/workflows/commit-message.yml/badge.svg)
+![Generate Image and Push to Github Pages](https://github.com/ISaejinI/DevOpsExercices/actions/workflows/generate-image.yml/badge.svg)
+![Add Comment on Commit](https://github.com/ISaejinI/DevOpsExercices/actions/workflows/comment-on-commit.yml/badge.svg)
+![Send Discord Notification](https://github.com/ISaejinI/DevOpsExercices/actions/workflows/discord-notification.yml/badge.svg)
+
 ## Présentation
 
 Ce projet utilise **GitHub Actions** pour générer automatiquement une image à partir du message du dernier commit envoyé sur la branche `main`.
