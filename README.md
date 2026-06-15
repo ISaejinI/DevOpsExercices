@@ -1,9 +1,9 @@
 # Exercices DevOps
 
-![Version](https://img.shields.io/github/v/release/ISaejinI/DevOpsExercices?label=version&style=for-the-badge)
+![Version](https://img.shields.io/github/v/release/ISaejinI/DevOpsExercices?label=version)
 ![Contributors](https://img.shields.io/github/contributors/ISaejinI/DevOpsExercices)
-![Stars](https://img.shields.io/github/stars/ISaejinI/DevOpsExercices?style=for-the-badge)
-![Last commit](https://img.shields.io/github/last-commit/ISaejinI/DevOpsExercices?label=dernier%20commit&style=for-the-badge)
+![Stars](https://img.shields.io/github/stars/ISaejinI/DevOpsExercices)
+![Last commit](https://img.shields.io/github/last-commit/ISaejinI/DevOpsExercices?label=dernier%20commit)
 
 ## Présentation
 
